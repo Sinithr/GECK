@@ -1,0 +1,10 @@
+D13:  rdx  - bluetooth
+D12:  tdx  - bluetooth
+D11:  data - czujnik T i W
+ A5:  SCL  - LCD
+ A4:  SDA  - LCD
+ A3:  A0   - czujnik gleby
+ A2:  in   - czujnik światła
+ A1:  in   - water
+D02----    - numpad
+D09:  in    - light 
