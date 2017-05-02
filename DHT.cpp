@@ -118,14 +118,16 @@ boolean DHT::read(void) {
   delayMicroseconds(40);
   //delay(1);
   pinMode(_pin, INPUT);
-  while(digitalRead(_pin)){
-    Serial.println("dht11 start condition 1 not met");
-  }
+  //while(digitalRead(_pin)){
+    //Serial.println("dht11 start condition 1 not met");
+  if (digitalRead(_pin)) return NAN; 
+  //}
   delayMicroseconds(80);
 
-  while(!digitalRead(_pin)){
-    Serial.println("dht11 start condition 2 not met");
-  }
+//  while(!digitalRead(_pin)){
+    //Serial.println("dht11 start condition 2 not met");
+  //}
+  if(!digitalRead(_pin)) return NAN;
   delayMicroseconds(80);
   
   for (i=0; i<5; i++){

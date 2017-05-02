@@ -48,11 +48,15 @@ class GECK
     {
         data[4]=dht2.readTemperature();
         data[0]=dht2.readHumidity();
-        if(isnan(data[0])|| isnan(data[4]) )
+        if(isnan(dht2.readTemperature())|| isnan(dht2.readHumidity() ))
         { 
             data[4]=0;
             data[0]=0;
-        }    //H&T external
+        
+        
+        }
+        
+        //H&T external   
     }
     void LCDA(void) //LCD data display
     {
@@ -94,7 +98,7 @@ class GECK
         lcd.setCursor(3,1); 
         lcd.print("H-HUMIDITY");
   
-        delay(2000);
+        delay(3000);
    
         lcd.clear();
         lcd.setCursor(0,0); 
@@ -102,7 +106,7 @@ class GECK
         lcd.setCursor(0,1); 
         lcd.print("G-SOIL MOISTURE");
         
-        delay(2000);
+        delay(3000);
    
         lcd.clear();
         lcd.setCursor(3,0); 
@@ -110,9 +114,61 @@ class GECK
         lcd.setCursor(4,1); 
         lcd.print("EXPOSURE");
         
-        delay(2000);
+        delay(3000);
+        
+        lcd.clear();
+        lcd.setCursor(0,0); 
+        lcd.print("1/2-LIGHT OFF/ON ");
+        lcd.setCursor(0,1); 
+        lcd.print("3 - WATERING ");
+        
+        delay(3000);
+        
+        lcd.clear();
+        lcd.setCursor(0,0);  
+        lcd.print("# - STATUS");
+        
+        delay(3000);
+        
     }
-  
+    void LCDC(void) //STATUS
+    {
+        lcd.clear();
+        lcd.setCursor(0,0); 
+        lcd.print("---STATUS---");
+        lcd.setCursor(0,1); 
+        lcd.print("SENSORS:"); 
+        
+        delay(3000);
+        
+        lcd.clear();
+        lcd.setCursor(0,0); 
+        lcd.print("EXTERNAL H&T: ");
+        if(isnan(dht2.readTemperature() )|| isnan(dht2.readHumidity() )) lcd.print("E");
+        else lcd.print("OK"); 
+        
+        
+        lcd.setCursor(0,1); 
+        lcd.print("MOISTURE: ");
+        if(analogRead(A3) >=900 || analogRead(A3)<100 ) lcd.print("E");
+        else lcd.print("OK");
+        
+        delay(3000);
+   
+        lcd.clear();
+        lcd.setCursor(0,0); 
+        lcd.print("SUNLIGHT: ");
+        if (analogRead(A3)<10) lcd.print("E");
+        else lcd.print("OK"); 
+        lcd.setCursor(0,1); 
+        lcd.print("INTERNAL H&T: ");
+        if (isnan(dht.readTemperature() )) lcd.print("E");
+        else lcd.print("OK"); 
+        
+        delay(3000);
+        
+    }
+
   
     void bluetooth(void)
     {
@@ -141,6 +197,7 @@ class GECK
         {
             Serial.println(key);
             if(key==char(35)) X='B';
+            if(key==char(42)) X='C';
             if(key=='1')  light=0 ;
             if(key=='2')  light=1 ;
             if(key=='3')  water=1 ;
@@ -196,7 +253,7 @@ class GECK
                         delay(3000);
                         digitalWrite (A1, HIGH);
                     }
-         
+                    if(X!='A')break;
          
                 }
          
@@ -210,6 +267,13 @@ class GECK
             X='A';
             break;
         }
+        case 'C':
+        {
+            LCDC();
+            X='A';
+            break;
+        }
+        
         
         }  
     }
