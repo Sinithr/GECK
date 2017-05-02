@@ -170,17 +170,23 @@ class GECK
          
             do
             {
+               if (light==0)
+                    {                       
+                        digitalWrite (9, HIGH);
+                    }   
+               if (light==1)
+                    {
+                        digitalWrite (9, LOW);
+                    }
                 bluetooth();
                 if (key())
                 {
                     if (light==0)
-                    {
-                        light=-1;
+                    {                       
                         digitalWrite (9, HIGH);
                     }   
                     if (light==1)
                     {
-                        light=-1;
                         digitalWrite (9, LOW);
                     }
                     if (water==1)
