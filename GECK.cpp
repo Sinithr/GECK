@@ -1,5 +1,35 @@
 #include "GECK.h"
 
+GECK::GECK() : lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE),
+               keys{ {'1','2','3'},
+                     {'4','5','6'},
+                     {'7','8','9'},
+                     {'#','0','*'}
+                   },
+               rowPins{8, 7, 6, 5},
+               colPins{4, 3, 2},
+               kpd(makeKeymap(keys), rowPins, colPins, 4, 3),
+               Genotronex(12, 13), // RX, TX bluetooth
+               X('A'),
+               light(-1),
+               water(-1),
+               dht(DHTPIN, DHTTYPE),
+               dht2(10,DHTTYPE)
+{
+  pinMode(9, OUTPUT); // defaults HIGH (relays off)
+  pinMode(A1,OUTPUT);
+  digitalWrite(9,HIGH);
+  digitalWrite(A1,HIGH);
+  
+  Genotronex.begin(9600);//Bluetooth
+  Serial.begin(9600);
+  Genotronex.println("Bluetooth On");
+  delay(2000);
+  
+  lcd.begin(16,2);   
+  lcd.noBacklight();
+}
+
 void GECK::Detector1(void) 
 {  
   data[1]=dht.readTemperature(); 
@@ -170,7 +200,7 @@ void GECK::bluetooth(void)
   }
 }
 
-bool GECK::key()
+bool GECK::key(void)
 {
   char key = kpd.getKey();
   if (key != NO_KEY)
@@ -241,8 +271,6 @@ void GECK::cycle(void)
     }
   }  
 }
-
-
 
 
 
