@@ -22,47 +22,68 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Ustawienie ad
 int i2caddress = 0x20;
 const byte ROWS = 4;
 const byte COLS = 3; 
-char keys[ROWS][COLS] = {
-  {'1','2','3'},
-  {'4','5','6'},
-  {'7','8','9'},
-  {'#','0','*'}
+char keys[ROWS][COLS] = 
+{
+  {
+    '1','2','3'                                  }
+  ,
+  {
+    '4','5','6'                                  }
+  ,
+  {
+    '7','8','9'                                  }
+  ,
+  {
+    '#','0','*'                                  }
 };
 
-byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = {
+  8, 7, 6, 5}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {
+  4, 3, 2}; //connect to the column pinouts of the keypad
 Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
-/****************************************************************/
+GECK SYSTEM;
 
-
-
-
-
- GECK SYSTEM;
- 
-void setup() {
-   pinMode(9, OUTPUT); // defaults HIGH (relays off)
-   pinMode(A1,OUTPUT);
+void setup() 
+{
+  pinMode(9, OUTPUT); // defaults HIGH (relays off)
+  pinMode(A1,OUTPUT);
   digitalWrite(9,HIGH);
-    digitalWrite(A1,HIGH);
+  digitalWrite(A1,HIGH);
 
   Genotronex.begin(9600);//Bluetooth
   Serial.begin(9600);
   Genotronex.println("Bluetooth On");
-    delay(2000);
+  delay(2000);
 
   lcd.begin(16,2);   
   lcd.noBacklight(); 
   //mySerial.begin(9600);
- // mySerial.println("Hello, world?");
+  // mySerial.println("Hello, world?");
 }
 
 void loop()
 { 
   SYSTEM.cycle();
-   // Serial.write("serial");
-   // mySerial.write("asd");
-   
+  // Serial.write("serial");
+  // mySerial.write("asd");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
