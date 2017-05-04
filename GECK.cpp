@@ -16,6 +16,11 @@ GECK::GECK() : lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE),
                dht(DHTPIN, DHTTYPE),
                dht2(10,DHTTYPE)
 {
+  
+}
+
+void GECK::configure(void)
+{
   pinMode(9, OUTPUT); // defaults HIGH (relays off)
   pinMode(A1,OUTPUT);
   digitalWrite(9,HIGH);

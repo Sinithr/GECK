@@ -14,6 +14,7 @@ GECK system;
 
 void setup() 
 {
+  system.configure();
 }
 
 void loop()

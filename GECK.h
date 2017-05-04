@@ -13,6 +13,7 @@ class GECK
 {
 public:
   void cycle(void);
+  void configure(void);
   GECK(void);
   
 private:
