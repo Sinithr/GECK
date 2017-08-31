@@ -1,5 +1,4 @@
-D13:  rdx  - bluetooth
-D12:  tdx  - bluetooth
+D13:  out  - servo
 D11:  data - czujnik T i W
  A5:  SCL  - LCD
  A4:  SDA  - LCD
