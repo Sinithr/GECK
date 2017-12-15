@@ -195,8 +195,6 @@ bool GECK::key(void) {
     if (key == '1')
       turn_on_light = turn_on_light ? false : true;
     if (key == '2')
-      turn_on_light = true;
-    if (key == '3')
       turn_on_water = true;
     return 1;
   }
