@@ -1,0 +1,5 @@
+1 - włączanie/wyłączanie światła.
+2 - podlewanie
+3 - otwieranie/zamykanie drzwiczek
+0 - manual/automat
+

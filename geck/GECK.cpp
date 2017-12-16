@@ -10,6 +10,8 @@ GECK::GECK()
       lcd_state(LCD_STATE_SENSORS),
       turn_on_light(false),
       turn_on_water(false),
+      turn_on_door(false),
+      door_state(0),
       dht(DHTPIN, DHTTYPE),
       dht2(10, DHTTYPE) {}
 
@@ -196,6 +198,8 @@ bool GECK::key(void) {
       turn_on_light = turn_on_light ? false : true;
     if (key == '2')
       turn_on_water = true;
+    if (key == '3')
+      turn_on_door = true;
     return 1;
   }
   return 0;
