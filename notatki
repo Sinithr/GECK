@@ -1,0 +1,11 @@
+98:d3:34:90:66:18
+HC-05
+data[0] - wilgotność na zewn.
+data[1] - temp. w środku
+data[2] - wilgotność gleby, port A3
+data[3] - światło, port A2
+data[4] - temp. na zewn.
+Detector1 - temp. w środku, zmienna dht, port 11
+Detector2 - wilgotność gleby
+Detector3 - światło
+Detector4 - wilgoć i temp. na zewn., zmienna dht2, port 10
