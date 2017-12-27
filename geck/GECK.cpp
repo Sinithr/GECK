@@ -11,9 +11,20 @@ GECK::GECK()
       turn_on_light(false),
       turn_on_water(false),
       turn_on_door(false),
+      pid_on(true),
+      auto_watering(true),
+      watering_threshold(400),
       door_state(0),
       dht(DHTPIN, DHTTYPE),
-      dht2(10, DHTTYPE) {}
+      dht2(10, DHTTYPE),
+      pid_setpoint(22),
+      pid_controller( &pid_input, 
+                      &pid_output,
+                      &pid_setpoint, 
+                      6, 
+                      10, 
+                      1, 
+                      REVERSE) {}
 
 void GECK::configure(void) {
   pinMode(9, OUTPUT);  // defaults HIGH (relays off)
@@ -28,6 +39,9 @@ void GECK::configure(void) {
 
   lcd.begin(16, 2);
   //lcd.noBacklight();
+  servo.attach(13);
+  pid_controller.SetMode(AUTOMATIC);
+  pid_controller.SetOutputLimits(0, 100);
 }
 
 void GECK::check_temperature_inside(void) {
@@ -73,14 +87,19 @@ void GECK::LCDA(void) {
 
   lcd.setCursor(0, 1);
   lcd.print("G:");
-  lcd.setCursor(3, 1);
+  lcd.setCursor(2, 1);
   lcd.print(humidity_soil);
 
-  lcd.setCursor(7, 1);
+  lcd.setCursor(6, 1);
   lcd.print("L:");
-  lcd.setCursor(10, 1);
+  lcd.setCursor(8, 1);
   lcd.print(light_outside);
-  lcd.print(" ");
+  lcd.setCursor(12, 1);
+  lcd.print(auto_watering ? "Y" : "N");
+  lcd.setCursor(13, 1);
+  lcd.print(pid_on ? "Y" : "N");
+  lcd.setCursor(14, 1);
+  lcd.print(pid_setpoint);
 }
 
 void GECK::LCDB(void) {
@@ -110,9 +129,63 @@ void GECK::LCDB(void) {
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("1/2-LIGHT OFF/ON ");
+  lcd.print("1-LIGHT OFF/ON ");
   lcd.setCursor(0, 1);
-  lcd.print("3 - WATERING ");
+  lcd.print("2-WATERING ");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("3-OPEN/CLOSE");
+  lcd.setCursor(0, 1);
+  lcd.print("DOOR");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("4-DECREASE");
+  lcd.setCursor(0, 1);
+  lcd.print("PID SETPOINT");
+
+  delay(3000);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("5-INCREASE");
+  lcd.setCursor(0, 1);
+  lcd.print("PID SETPOINT");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("6-PID ON/OFF");
+
+  delay(3000);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("7-DECREASE");
+  lcd.setCursor(0, 1);
+  lcd.print("WATERING THRESHOLD");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("8-INCREASE");
+  lcd.setCursor(0, 1);
+  lcd.print("WATERING THRES.");
+
+  delay(3000);
+  
+    lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("9-AUTO WATERING");
+  lcd.setCursor(0, 1);
+  lcd.print("ON/OFF");
 
   delay(3000);
 
@@ -124,14 +197,6 @@ void GECK::LCDB(void) {
 }
 
 void GECK::LCDC(void) {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("---STATUS---");
-  lcd.setCursor(0, 1);
-  lcd.print("SENSORS:");
-
-  delay(3000);
-
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("EXTERNAL H&T: ");
@@ -165,25 +230,94 @@ void GECK::LCDC(void) {
   else
     lcd.print("OK");
 
+  delay(3000); //pid_on
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("PID state: ");
+  if(pid_on)
+    lcd.print("ON");
+  else
+    lcd.print("OFF");
+  lcd.setCursor(0, 1);
+  lcd.print("PID setpoint: ");
+  lcd.print(pid_setpoint);
+  lcd.print("C");
+  
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Auto watering");
+  lcd.setCursor(0, 1);
+  lcd.print("state: ");
+  if(auto_watering)
+    lcd.print("ON");
+  else
+    lcd.print("OFF");
+    
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Watering");
+  lcd.setCursor(0, 1);
+  lcd.print("threshold: ");
+  lcd.print(watering_threshold);
+  
   delay(3000);
 }
 
-void GECK::bluetooth(void) {
-  if (Genotronex.available()) {
+bool GECK::bluetooth(void) {
+  if(Genotronex.available()) {
     BluetoothData = Genotronex.read();
-    if (BluetoothData == '1') {
+    if (BluetoothData == '1')
+      turn_on_light = turn_on_light ? false : true;
+    else if(BluetoothData == '2')
+      turn_on_water = true;
+    else if(BluetoothData == '3')
+      turn_on_door = true;
+    else if(BluetoothData == '4')
+      pid_setpoint--;
+    else if(BluetoothData == '5')
+      pid_setpoint++;
+    else if(BluetoothData == '6') {
+      pid_on = pid_on ? false : true;
+      turn_pid(pid_on);
+    }
+    else if(BluetoothData == '7')
+      watering_threshold -= 10;
+    else if(BluetoothData == '8')
+      watering_threshold += 10;
+    else if(BluetoothData == '9') {
+      auto_watering = auto_watering ? false : true;
+    }
+    else if(BluetoothData == 'd' || BluetoothData == 'D') {
+      servo.detach(); // because of overwritting
       Genotronex.print("Temperature inside (C): ");
       Genotronex.println(temperature_inside);
       Genotronex.print("Temperature outside (C): ");
       Genotronex.println(temperature_outside);
       Genotronex.print("Soil humidity: ");
       Genotronex.println(humidity_soil);
-      Genotronex.print("Air humidity outside: ");
+      Genotronex.print("Air humidity outside(%): ");
       Genotronex.println(humidity_outside);
       Genotronex.print("LUX: ");
       Genotronex.println(light_outside);
-    }
+      Genotronex.print("PID state: ");
+      Genotronex.println(pid_on ? "ON" : "OFF");
+      Genotronex.print("PID setpoint: ");
+      Genotronex.println(pid_setpoint);
+      Genotronex.print("Auto watering state: ");
+      Genotronex.println(auto_watering ? "ON" : "OFF");
+      Genotronex.print("watering threshold: ");
+      Genotronex.println(watering_threshold);
+      servo.attach(13); // turning on
+    } else
+      return 0;
+    return 1;
   }
+  return 0;
 }
 
 bool GECK::key(void) {
@@ -200,17 +334,41 @@ bool GECK::key(void) {
       turn_on_water = true;
     if (key == '3')
       turn_on_door = true;
+    if(key == '4')
+      pid_setpoint--;
+    if(key == '5')
+      pid_setpoint++;
+    if(key == '6') {
+      pid_on = pid_on ? false : true;
+      turn_pid(pid_on);
+    }
+    if(key == '7')
+      watering_threshold -= 10;
+    if(key == '8')
+      watering_threshold += 10;
+    if(key == '9') {
+      auto_watering = auto_watering ? false : true;
+    }
     return 1;
   }
   return 0;
 }
 
 void GECK::cycle(void) {
+  static int counter = 0;
   unsigned long start;
   check_temperature_inside();
   check_humidity_soil();
   check_light_outside();
   check_humidity_temperature_outside();
+  pid_input = temperature_inside;
+  if(counter++ >= 12) {
+    if(pid_on) {
+      pid_controller.Compute();
+      set_servo_position(pid_output);
+    }
+    counter = 0;
+  }
   switch (lcd_state) {
     case LCD_STATE_SENSORS: {
       LCDA();
@@ -233,8 +391,7 @@ void GECK::cycle(void) {
       digitalWrite(9, HIGH);
     if (turn_on_light == true)
       digitalWrite(9, LOW);
-    bluetooth();
-    if (key()) {
+    if (key() || bluetooth()) {
       if (turn_on_light == false)
         digitalWrite(9, HIGH);
       if (turn_on_light == true)
@@ -245,9 +402,49 @@ void GECK::cycle(void) {
         delay(3000);
         digitalWrite(A1, HIGH);
       }
+      if (turn_on_door == true) {
+         turn_on_door = false;
+         if (door_state == 0) {
+           set_servo_position(100);
+         } else {
+           set_servo_position(0);
+         }
+         
+      }
       if (lcd_state != LCD_STATE_SENSORS)
         break;
     }
   } while ((millis() - start) <= 5000);
 }
 
+void GECK::set_servo_position(int pos) {
+  if(abs(pos-door_state) < 1)
+    return;
+  if(abs(pos-door_state) < 5) // very small change could be inaccurate
+    if(pos == 0)
+      set_servo_position(15);
+    else if(pos == 100)
+      set_servo_position(85);
+    else
+      return;
+  int move_direction;
+  if(pos > door_state)
+    move_direction = 130;
+  else
+    move_direction = 50;
+  servo_move(move_direction);
+  delay(abs(pos-door_state) * 20);
+  servo_move(90);
+  door_state = pos;
+}
+
+void GECK::servo_move(int val) {
+   servo.write(val); 
+}
+
+void GECK::turn_pid(bool on_off) {
+    if(on_off)
+      pid_controller.SetMode(AUTOMATIC);
+    else
+      pid_controller.SetMode(MANUAL);
+}
