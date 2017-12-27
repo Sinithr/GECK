@@ -141,13 +141,13 @@ void GECK::LCDB(void) {
   lcd.clear();
   lcd.setCursor(4, 0);
   lcd.print("2nd Y/N");
-  lcd.setCursor(3, 1);
+  lcd.setCursor(2, 1);
   lcd.print("AUTO WATERING");
 
   delay(3000);
 
   lcd.clear();
-  lcd.setCursor(3, 0);
+  lcd.setCursor(4, 0);
   lcd.print("3rd Y/N");
   lcd.setCursor(6, 1);
   lcd.print("PID");
@@ -155,10 +155,10 @@ void GECK::LCDB(void) {
   delay(3000);
   
   lcd.clear();
-  lcd.setCursor(3, 0);
+  lcd.setCursor(2, 0);
   lcd.print("LAST NUMBERS");
-  lcd.setCursor(4, 1);
-  lcd.print("-PID SETPOINT");
+  lcd.setCursor(2, 1);
+  lcd.print("PID SETPOINT");
 
   delay(3000);
 
@@ -204,7 +204,7 @@ void GECK::LCDB(void) {
   lcd.setCursor(0, 0);
   lcd.print("7-DECREASE");
   lcd.setCursor(0, 1);
-  lcd.print("WATERING THRESHOLD");
+  lcd.print("WATERING THRESH.");
 
   delay(3000);
   
@@ -430,6 +430,9 @@ void GECK::cycle(void) {
     }
   pid_input = temperature_inside;
   if(counter++ >= 12) {
+    if(auto_watering)
+      if(humidity_soil >= watering_threshold)
+        turn_on_water = true;
     if(pid_on) {
       pid_controller.Compute();
       set_servo_position(pid_output);
