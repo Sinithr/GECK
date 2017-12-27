@@ -1,5 +1,9 @@
 1 - włączanie/wyłączanie światła.
 2 - podlewanie
 3 - otwieranie/zamykanie drzwiczek
-0 - manual/automat
+4/5 - zmniejszanie/zwiększanie docelowej temp.
+6 - włączanie/wyłączanie PID(sterowanie drzwiczkami)
+7/8 - zmniejszanie/zwiększanie progu podlewania
+9 - włączanie/wyłączanie automatycznego podlewania
+0 - włączanie/wyłączanie automatycznego światła
 

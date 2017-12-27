@@ -13,6 +13,7 @@ GECK::GECK()
       turn_on_door(false),
       pid_on(true),
       auto_watering(true),
+      auto_light(true),
       watering_threshold(400),
       door_state(0),
       dht(DHTPIN, DHTTYPE),
@@ -94,6 +95,8 @@ void GECK::LCDA(void) {
   lcd.print("L:");
   lcd.setCursor(8, 1);
   lcd.print(light_outside);
+  lcd.setCursor(11, 1);
+  lcd.print(auto_light ? "Y" : "N");
   lcd.setCursor(12, 1);
   lcd.print(auto_watering ? "Y" : "N");
   lcd.setCursor(13, 1);
@@ -124,6 +127,38 @@ void GECK::LCDB(void) {
   lcd.print("L-SUNLIGHT ");
   lcd.setCursor(4, 1);
   lcd.print("EXPOSURE");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(4, 0);
+  lcd.print("1st Y/N");
+  lcd.setCursor(3, 1);
+  lcd.print("AUTO LIGHT");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(4, 0);
+  lcd.print("2nd Y/N");
+  lcd.setCursor(3, 1);
+  lcd.print("AUTO WATERING");
+
+  delay(3000);
+
+  lcd.clear();
+  lcd.setCursor(3, 0);
+  lcd.print("3rd Y/N");
+  lcd.setCursor(6, 1);
+  lcd.print("PID");
+  
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(3, 0);
+  lcd.print("LAST NUMBERS");
+  lcd.setCursor(4, 1);
+  lcd.print("-PID SETPOINT");
 
   delay(3000);
 
@@ -181,9 +216,17 @@ void GECK::LCDB(void) {
 
   delay(3000);
   
-    lcd.clear();
+  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("9-AUTO WATERING");
+  lcd.setCursor(0, 1);
+  lcd.print("ON/OFF");
+
+  delay(3000);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("0-AUTO LIGHT");
   lcd.setCursor(0, 1);
   lcd.print("ON/OFF");
 
@@ -271,12 +314,17 @@ void GECK::LCDC(void) {
 bool GECK::bluetooth(void) {
   if(Genotronex.available()) {
     BluetoothData = Genotronex.read();
-    if (BluetoothData == '1')
+    if (BluetoothData == '1') {
       turn_on_light = turn_on_light ? false : true;
+      auto_light = false;
+    }
     else if(BluetoothData == '2')
       turn_on_water = true;
-    else if(BluetoothData == '3')
+    else if(BluetoothData == '3') {
       turn_on_door = true;
+      pid_on = false;
+      turn_pid(pid_on);
+    }
     else if(BluetoothData == '4')
       pid_setpoint--;
     else if(BluetoothData == '5')
@@ -291,6 +339,9 @@ bool GECK::bluetooth(void) {
       watering_threshold += 10;
     else if(BluetoothData == '9') {
       auto_watering = auto_watering ? false : true;
+    }
+    else if(BluetoothData == '0') {
+      auto_light = auto_light ? false : true;
     }
     else if(BluetoothData == 'd' || BluetoothData == 'D') {
       servo.detach(); // because of overwritting
@@ -312,6 +363,8 @@ bool GECK::bluetooth(void) {
       Genotronex.println(auto_watering ? "ON" : "OFF");
       Genotronex.print("watering threshold: ");
       Genotronex.println(watering_threshold);
+      Genotronex.print("Auto light: ");
+      Genotronex.println(auto_light ? "ON" : "OFF");
       servo.attach(13); // turning on
     } else
       return 0;
@@ -328,12 +381,17 @@ bool GECK::key(void) {
       lcd_state = LCD_STATE_HELP;
     if (key == char(42))
       lcd_state = LCD_STATE_STATUS;
-    if (key == '1')
+    if (key == '1') {
       turn_on_light = turn_on_light ? false : true;
+      auto_light = false;
+    }
     if (key == '2')
       turn_on_water = true;
-    if (key == '3')
+    if (key == '3') {
       turn_on_door = true;
+      pid_on = false;
+      turn_pid(pid_on);
+    }
     if(key == '4')
       pid_setpoint--;
     if(key == '5')
@@ -349,6 +407,9 @@ bool GECK::key(void) {
     if(key == '9') {
       auto_watering = auto_watering ? false : true;
     }
+    if(key == '0') {
+      auto_light = auto_light ? false : true;
+    }
     return 1;
   }
   return 0;
@@ -361,6 +422,12 @@ void GECK::cycle(void) {
   check_humidity_soil();
   check_light_outside();
   check_humidity_temperature_outside();
+  if(auto_light) {
+      if(light_outside < 100)
+        turn_on_light = true;
+      else
+        turn_on_light = false;
+    }
   pid_input = temperature_inside;
   if(counter++ >= 12) {
     if(pid_on) {

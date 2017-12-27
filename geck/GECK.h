@@ -20,7 +20,7 @@ class GECK {
   enum LCD_STATES { LCD_STATE_SENSORS, LCD_STATE_HELP, LCD_STATE_STATUS };
   LCD_STATES lcd_state;
   bool turn_on_light, turn_on_water, lcd_background_light,
-       turn_on_door, pid_on, auto_watering;
+       turn_on_door, pid_on, auto_watering, auto_light;
   int light_outside, humidity_outside, humidity_soil, temperature_inside,
       temperature_outside, door_state, watering_threshold;
   const char keys[4][3];
