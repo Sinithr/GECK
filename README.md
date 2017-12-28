@@ -1,2 +1,1 @@
-# geck
-Generator Ekosystemu Cudownej Krainy
+# GECK
