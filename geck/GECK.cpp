@@ -16,8 +16,8 @@ GECK::GECK()
       auto_light(true),
       watering_threshold(400),
       door_state(0),
-      dht(DHTPIN, DHTTYPE),
-      dht2(10, DHTTYPE),
+      dht(11, DHT11),
+      dht2(10, DHT11),
       pid_setpoint(22),
       pid_controller( &pid_input, 
                       &pid_output,
@@ -423,7 +423,7 @@ void GECK::cycle(void) {
   check_light_outside();
   check_humidity_temperature_outside();
   if(auto_light) {
-      if(light_outside < 100)
+      if(light_outside < LIGHT_THRESHOLD)
         turn_on_light = true;
       else
         turn_on_light = false;
@@ -457,10 +457,6 @@ void GECK::cycle(void) {
   }
   start = millis();
   do {
-    if (turn_on_light == false)
-      digitalWrite(9, HIGH);
-    if (turn_on_light == true)
-      digitalWrite(9, LOW);
     if (key() || bluetooth()) {
       if (turn_on_light == false)
         digitalWrite(9, HIGH);
@@ -503,7 +499,7 @@ void GECK::set_servo_position(int pos) {
   else
     move_direction = 50;
   servo_move(move_direction);
-  delay(abs(pos-door_state) * 20);
+  delay(abs(pos-door_state) * 7);
   servo_move(90);
   door_state = pos;
 }

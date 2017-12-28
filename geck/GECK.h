@@ -7,8 +7,7 @@
 #include <DHT.h>
 #include <Servo.h>
 #include <PID_v1.h>
-#define DHTPIN 11
-#define DHTTYPE DHT11
+#define LIGHT_THRESHOLD 200
 
 class GECK {
  public:
